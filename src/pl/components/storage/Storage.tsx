@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {useEffect, useState} from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -15,11 +16,20 @@ import {BoxedNavigator} from "../navigator/BoxedNavigator";
 import {theme} from "../MainPage/MainPage";
 import {ThemeProvider} from "@mui/material/styles";
 import Box from "@mui/material/Box";
-import {useEffect, useState} from "react";
-import {getAllStorage, addStorageItem, StorageDTO} from "../../services/Api";
-import {CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField} from "@mui/material";
+import {addStorageItem, getAllStorage, StorageDTO} from "../../services/Api";
+import {
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    TextField
+} from "@mui/material";
+import {useUser} from "../LoginPage/UserProvider";
 
 export const Storage = () => {
+    const {role} = useUser();
     const [storage, setStorage] = useState<StorageDTO[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [open, setOpen] = useState<boolean>(false);
@@ -50,7 +60,7 @@ export const Storage = () => {
             const addedPart = await addStorageItem(newPart);
             setStorage([...storage, addedPart]);
             setOpen(false);
-            setNewPart({ name: '', type: '', stock: 0, price: 0 });
+            setNewPart({name: '', type: '', stock: 0, price: 0});
             setRefetch(true)
         } catch (error) {
             console.error('Failed to add part:', error);
@@ -73,12 +83,11 @@ export const Storage = () => {
                                 <Grid item xs>
                                 </Grid>
                                 <Grid item>
-                                    <Button variant="contained" sx={{mr: 1}} onClick={() => setOpen(true)}>
-                                        Dodaj nową część
-                                    </Button>
-                                    <Button variant="contained" sx={{mr: 1}}>
-                                        Dostawa
-                                    </Button>
+                                    {role === 'admin' ? (
+                                        <Button variant="contained" sx={{mr: 1}} onClick={() => setOpen(true)}>
+                                            Dodaj nową część
+                                        </Button>
+                                    ) : null}
                                 </Grid>
                             </Grid>
                         </Toolbar>
@@ -88,7 +97,12 @@ export const Storage = () => {
                     </Typography>
                     <TableContainer component={Paper}>
                         {loading ? (
-                            <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                height: '100vh'
+                            }}>
                                 <CircularProgress/>
                             </div>
                         ) : (
@@ -96,7 +110,6 @@ export const Storage = () => {
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>Nazwa</TableCell>
-                                        <TableCell>Typ</TableCell>
                                         <TableCell>Stan magazynowy</TableCell>
                                         <TableCell>Cena</TableCell>
                                     </TableRow>
@@ -105,7 +118,6 @@ export const Storage = () => {
                                     {storage.map((storage) => (
                                         <TableRow key={storage.id}>
                                             <TableCell>{storage.name}</TableCell>
-                                            <TableCell>{storage.type}</TableCell>
                                             <TableCell>{storage.stock}</TableCell>
                                             <TableCell>{storage.price}</TableCell>
                                         </TableRow>
@@ -130,7 +142,7 @@ export const Storage = () => {
                         fullWidth
                         variant="standard"
                         value={newPart.name}
-                        onChange={(e) => setNewPart({ ...newPart, name: e.target.value })}
+                        onChange={(e) => setNewPart({...newPart, name: e.target.value})}
                     />
                     <TextField
                         margin="dense"
@@ -138,7 +150,7 @@ export const Storage = () => {
                         fullWidth
                         variant="standard"
                         value={newPart.type}
-                        onChange={(e) => setNewPart({ ...newPart, type: e.target.value })}
+                        onChange={(e) => setNewPart({...newPart, type: e.target.value})}
                     />
                     <TextField
                         margin="dense"
@@ -147,7 +159,7 @@ export const Storage = () => {
                         fullWidth
                         variant="standard"
                         value={newPart.stock}
-                        onChange={(e) => setNewPart({ ...newPart, stock: Number(e.target.value) })}
+                        onChange={(e) => setNewPart({...newPart, stock: Number(e.target.value)})}
                     />
                     <TextField
                         margin="dense"
@@ -156,7 +168,7 @@ export const Storage = () => {
                         fullWidth
                         variant="standard"
                         value={newPart.price}
-                        onChange={(e) => setNewPart({ ...newPart, price: Number(e.target.value) })}
+                        onChange={(e) => setNewPart({...newPart, price: Number(e.target.value)})}
                     />
                 </DialogContent>
                 <DialogActions>

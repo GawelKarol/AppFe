@@ -12,18 +12,9 @@ import PeopleIcon from '@mui/icons-material/People';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import HomeRepairServiceIcon from '@mui/icons-material/HomeRepairService';
 import DocumentScannerIcon from '@mui/icons-material/DocumentScanner';
-
-const categories = [
-    {
-        id: 'Admin',
-        children: [
-            {id: 'Użytkownicy', icon: <PeopleIcon/>, link: '/paperbase/users'},
-            {id: 'Magazyn', icon: <WarehouseIcon/>, link: '/paperbase/storage'},
-            {id: 'Zaplanowane Wizyty/Terminarz', icon: <HomeRepairServiceIcon/>, link: '/paperbase/appointment'},
-            {id: 'Dokumenty', icon: <DocumentScannerIcon/>, link: '/paperbase/documents'},
-        ],
-    },
-];
+import LogoutIcon from '@mui/icons-material/Logout';
+import DomainIcon from '@mui/icons-material/Domain';
+import {useUser} from "../LoginPage/UserProvider";
 
 const item = {
     py: '2px',
@@ -42,6 +33,58 @@ const itemCategory = {
 
 const Navigator = (props: any) => {
     const {...other} = props;
+    const {role, name} = useUser();
+    const categoriess = (role: string) => {
+        if (role === 'admin') {
+            return [
+                {
+                    id: `Admin ${name}`,
+                    children: [
+                        {id: 'Strona główna', icon: <DomainIcon/>, link: '/paperbase'},
+                        {id: 'Użytkownicy', icon: <PeopleIcon/>, link: '/paperbase/users'},
+                        {id: 'Magazyn', icon: <WarehouseIcon/>, link: '/paperbase/storage'},
+                        {
+                            id: 'Zaplanowane Wizyty/Terminarz',
+                            icon: <HomeRepairServiceIcon/>,
+                            link: '/paperbase/appointment'
+                        },
+                        {id: 'Dokumenty', icon: <DocumentScannerIcon/>, link: '/paperbase/documents'},
+                        {id: 'Wyloguj', icon: <LogoutIcon/>, link: '/'},
+                    ],
+                },
+            ];
+        } else if (role === 'serwis') {
+            return [
+                {
+                    id: `Serwis ${name}`,
+                    children: [
+                        {id: 'Magazyn', icon: <WarehouseIcon/>, link: '/paperbase/storage'},
+                        {
+                            id: 'Zaplanowane Wizyty/Terminarz',
+                            icon: <HomeRepairServiceIcon/>,
+                            link: '/paperbase/appointment'
+                        },
+                        {id: 'Dokumenty', icon: <DocumentScannerIcon/>, link: '/paperbase/documents'},
+                        {id: 'Wyloguj', icon: <LogoutIcon/>, link: '/'},
+                    ],
+                },
+            ];
+        } else return [
+            {
+                id: `Client ${name}`,
+                children: [
+                    {id: 'Strona główna', icon: <DomainIcon/>, link: '/paperbase'},
+                    {
+                        id: 'Zaplanowane Wizyty/Terminarz',
+                        icon: <HomeRepairServiceIcon/>,
+                        link: '/paperbase/appointment'
+                    },
+                    {id: 'Dokumenty', icon: <DocumentScannerIcon/>, link: '/paperbase/documents'},
+                    {id: 'Wyloguj', icon: <LogoutIcon/>, link: '/'},
+                ],
+            },
+        ];
+    }
 
     return (
         <Drawer variant="permanent" {...other}>
@@ -49,7 +92,7 @@ const Navigator = (props: any) => {
                 <ListItem sx={{...item, ...itemCategory, fontSize: 22, color: '#fff'}}>
                     Śrubolud
                 </ListItem>
-                {categories.map(({id, children}) => (
+                {categoriess(role).map(({id, children}) => (
                     <Box key={id} sx={{bgcolor: '#101F33'}}>
                         <ListItem sx={{py: 2, px: 3}}>
                             <ListItemText sx={{color: '#fff'}}>{id}</ListItemText>

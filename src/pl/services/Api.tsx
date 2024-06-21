@@ -17,6 +17,7 @@ interface AuthRequest {
 
 interface AuthResponse {
     role: string;
+    name: string;
 }
 
 export const getAllUsers = async (): Promise<UserDTO[]> => {
@@ -44,11 +45,13 @@ export const addUser = async (user: Omit<UserDTO, 'id' | 'registerDate'>): Promi
 
 export interface ServiceDTO {
     id: number;
-    serviceDate: string; // LocalDateTime in string format
-    userName: string;
     serviceName: string;
-    price: number;
     status: string;
+    serviceCost: number;
+    appointmentDate: string; // LocalDateTime in string format
+    partnerName: string;
+    clientName: string;
+    usedParts: string[]; // List of used parts
     createdDate: string; // LocalDateTime in string format
 }
 
@@ -61,11 +64,36 @@ export const getAllServices = async (): Promise<ServiceDTO[]> => {
         throw error;
     }
 };
+export const getAllServicesForClient = async (clientName: string): Promise<ServiceDTO[]> => {
+    try {
+        const response = await axios.get<ServiceDTO[]>(`/api/services/client/${clientName}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+export const getAllServicesForPartner = async (partnerName: string): Promise<ServiceDTO[]> => {
+    try {
+        const response = await axios.get<ServiceDTO[]>(`/api/services/partner/${partnerName}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const changeServiceStatus = async (serviceId: number): Promise<void> => {
+    try {
+        await axios.post<void>(`/api/services/partner/change-status/${serviceId}`);
+    } catch (error) {
+        throw error;
+    }
+};
 
 export interface DocumentDTO {
     id: number;
     number: string;
     user: string;
+    partnerName: string;
     type: string;
     date: string; // LocalDate in string format
 }
@@ -79,10 +107,27 @@ export const getAllDocuments = async (): Promise<DocumentDTO[]> => {
     }
 };
 
+export const getAllDocumentsForClient = async (clientName: string): Promise<DocumentDTO[]> => {
+    try {
+        const response = await axios.get<DocumentDTO[]>(`/api/documents/client/${clientName}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getAllDocumentsForPartner = async (partnerName: string): Promise<DocumentDTO[]> => {
+    try {
+        const response = await axios.get<DocumentDTO[]>(`/api/documents/partner/${partnerName}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export interface StorageDTO {
     id: number;
     name: string;
-    type: string;
     stock: number;
     price: number;
 }
@@ -99,4 +144,34 @@ export const getAllStorage = async (): Promise<StorageDTO[]> => {
 export const addStorageItem = async (item: Omit<StorageDTO, 'id'>): Promise<StorageDTO> => {
     const response = await axios.post<StorageDTO>('/api/storage/add', item);
     return response.data;
+};
+
+export interface MechanicService {
+    orderId: number;
+    serviceName: string;
+    serviceCost: number;
+    appointmentDate: string;
+    ourPartners: string[];
+}
+
+export const getAllMechanicServices = async (): Promise<MechanicService[]> => {
+    const response = await axios.get<MechanicService[]>('/api/services/mechanic');
+    return response.data;
+};
+
+export const updateMechanicService = async (
+    orderId: number,
+    appointmentDate: string,
+    hour: string,
+    partner: string,
+    fullName: string
+): Promise<void> => {
+    await axios.post<MechanicService>(`/api/services/mechanic/add`, {
+        orderId,
+        appointmentDate,
+        hour,
+        partner,
+        fullName
+    });
+    return
 };

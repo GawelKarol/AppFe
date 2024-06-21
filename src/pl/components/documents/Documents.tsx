@@ -16,30 +16,39 @@ import {BoxedNavigator} from "../navigator/BoxedNavigator";
 import {theme} from "../MainPage/MainPage";
 import {ThemeProvider} from "@mui/material/styles";
 import Box from "@mui/material/Box";
-import {DocumentDTO, getAllDocuments} from "../../services/Api";
+import {DocumentDTO, getAllDocuments, getAllDocumentsForClient, getAllDocumentsForPartner} from "../../services/Api";
 import {CircularProgress} from "@mui/material";
+import {useUser} from "../LoginPage/UserProvider";
 
 export const Documents = () => {
-
+    const {role, name} = useUser();
     const [documents, setDocuments] = useState<DocumentDTO[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const result = await getAllDocuments();
+                let result;
+                if (role === 'admin') {
+                    result = await getAllDocuments();
+                } else if (role === 'client') {
+                    result = await getAllDocumentsForClient(name);
+                } else {
+                    result = await getAllDocumentsForPartner(name);
+                }
                 setDocuments(result);
                 setLoading(false);
             } catch (error) {
                 setLoading(false);
             }
+
         };
 
         fetchData();
     }, []);
 
-    const handleReport = (id: any) => {
-        console.log(`Zgłoś reklamację dla dokumentu o ID: ${id}`);
+    const handleReport = (number: any) => {
+        alert(`Pobierasz fakture numer: ${number}`);
     };
 
     return (
@@ -58,10 +67,6 @@ export const Documents = () => {
                                 <Grid item xs>
                                 </Grid>
                                 <Grid item>
-                                    <Button variant="contained" sx={{mr: 1}}>
-                                        Dodaj dokument
-                                    </Button>
-
                                 </Grid>
                             </Grid>
                         </Toolbar>
@@ -99,8 +104,8 @@ export const Documents = () => {
                                             <TableCell>{document.date}</TableCell>
                                             <TableCell>
                                                 <Button variant="contained" color="secondary"
-                                                        onClick={() => handleReport(document.id)}>
-                                                    Zgłoś reklamację
+                                                        onClick={() => handleReport(document.number)}>
+                                                    Pobierz fakture
                                                 </Button>
                                             </TableCell>
                                         </TableRow>

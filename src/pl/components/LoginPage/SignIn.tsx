@@ -1,20 +1,24 @@
+// src/components/SignIn.tsx
+
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { login } from '../../services/Api';
+import {createTheme, ThemeProvider} from '@mui/material/styles';
+import {login} from '../../services/Api';
+import {useUser} from './UserProvider';
 
 const defaultTheme = createTheme();
 
 export const SignIn = () => {
     const navigate = useNavigate();
+    const {setRole, setName} = useUser();
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -23,11 +27,13 @@ export const SignIn = () => {
         const password = data.get('password') as string;
 
         try {
-            const response = await login({ email, password });
-            if (response.role === 'admin') {
+            const response = await login({email, password});
+            setRole(response.role);
+            setName(response.name);
+            if (response.role === 'admin' || response.role === 'client') {
                 navigate('/paperbase');
             } else {
-                alert('Nie masz uprawnień administratora');
+                navigate('/paperbase/storage');
             }
         } catch (error) {
             alert('Błędne poświadczenia');
@@ -37,7 +43,7 @@ export const SignIn = () => {
     return (
         <ThemeProvider theme={defaultTheme}>
             <Container component="main" maxWidth="xs">
-                <CssBaseline />
+                <CssBaseline/>
                 <Box
                     sx={{
                         marginTop: 8,
@@ -46,13 +52,13 @@ export const SignIn = () => {
                         alignItems: 'center',
                     }}
                 >
-                    <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                        <LockOutlinedIcon />
+                    <Avatar sx={{m: 1, bgcolor: 'secondary.main'}}>
+                        <LockOutlinedIcon/>
                     </Avatar>
                     <Typography component="h1" variant="h5">
                         Logowanie
                     </Typography>
-                    <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+                    <Box component="form" onSubmit={handleSubmit} noValidate sx={{mt: 1}}>
                         <TextField
                             margin="normal"
                             required
@@ -77,7 +83,7 @@ export const SignIn = () => {
                             type="submit"
                             fullWidth
                             variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
+                            sx={{mt: 3, mb: 2}}
                         >
                             Zaloguj
                         </Button>
@@ -86,4 +92,4 @@ export const SignIn = () => {
             </Container>
         </ThemeProvider>
     );
-}
+};
