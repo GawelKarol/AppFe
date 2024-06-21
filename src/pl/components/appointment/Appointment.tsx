@@ -17,10 +17,11 @@ import {ThemeProvider} from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import {BoxedNavigator} from "../navigator/BoxedNavigator";
 import {
-    changeServiceStatus,
+    changeServiceClientStatus,
+    changeServicePartnerStatus,
     getAllServices,
     getAllServicesForClient,
-    getAllServicesForPartner,
+    getAllServicesForPartner, rejectServicePartnerStatus,
     ServiceDTO
 } from "../../services/Api";
 import {Button, CircularProgress} from "@mui/material";
@@ -32,9 +33,13 @@ export const Appointment = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [changeStatus, setChangeStatus] = useState<boolean>();
 
-    const firstStatus = 'Przyjęto twoje zgłoszenie'
-    const secondStatus = 'Twoje auto zostało przyjęte do serwisu'
+    const firstStatus = 'Otrzymaliśmy twoje zgłoszenie'
+    const secondStatus = 'Twoje zgłoszenie zostało potwierdzone'
+    const thirdStatus = 'Twoje auto zostało przyjęte do serwisu'
     const finalStatus = 'Twoja naprawa została zakończona'
+    const reclamationStatus = 'Twoja reklamacja została złożona'
+    const rejectStatus = 'Twoje zgłoszenie zostało odrzucone'
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -64,7 +69,21 @@ export const Appointment = () => {
             if (!changeStatus) {
                 setChangeStatus(true)
             }
-            await changeServiceStatus(serviceId)
+            if (role === 'serwis') {
+                await changeServicePartnerStatus(serviceId)
+            } else {
+                setChangeStatus(false)
+                await changeServiceClientStatus(serviceId)
+            }
+        } catch (error) {
+            alert('There was an error changing the status!');
+        }
+    };
+    const handleRejectStatus = async (serviceId: number) => {
+        try {
+            setChangeStatus(false)
+            await rejectServicePartnerStatus(serviceId)
+
         } catch (error) {
             console.error('There was an error changing the status!', error);
         }
@@ -74,7 +93,7 @@ export const Appointment = () => {
         <ThemeProvider theme={theme}>
             <Box sx={{display: 'flex', minHeight: '100vh'}}>
                 <BoxedNavigator/>
-                <Paper sx={{maxWidth: 936, margin: 'auto', overflow: 'hidden'}}>
+                <Paper sx={{maxWidth: 1060, margin: 'auto', overflow: 'hidden'}}>
                     <AppBar
                         position="static"
                         color="default"
@@ -111,8 +130,11 @@ export const Appointment = () => {
                                         <TableCell>Status</TableCell>
                                         <TableCell>Data założenia zlecenia</TableCell>
                                         <TableCell>Użyte części</TableCell>
-                                        {role === 'serwis' ? (
+                                        {role !== 'admin' ? (
                                             <TableCell>Zmiana statusu</TableCell>
+                                        ) : null}
+                                        {role === 'serwis' ? (
+                                            <TableCell>Odrzuć zlecenie</TableCell>
                                         ) : null}
                                     </TableRow>
                                 </TableHead>
@@ -129,16 +151,35 @@ export const Appointment = () => {
                                             <TableCell>{service.status}</TableCell>
                                             <TableCell>{new Date(service.createdDate).toLocaleString()}</TableCell>
                                             <TableCell>{service.usedParts.join(', ')}</TableCell>
-                                            {role === 'serwis' && service.status !== finalStatus ? (
+                                            {role === 'serwis' && (service.status !== finalStatus && service.status !== rejectStatus && service.status !== reclamationStatus) && (
                                                 <TableCell>
                                                     <Button variant="contained" color="primary"
                                                             onClick={() => handleChangeStatus(service.id)}>
                                                         {service.status === firstStatus ? (
-                                                            <>Przyjmij samochód</>
+                                                            <>Przyjmij zlecenie</>
                                                         ) : null}
                                                         {service.status === secondStatus ? (
+                                                            <>Przyjmij samochód</>
+                                                        ) : null}
+                                                        {service.status === thirdStatus ? (
                                                             <>Zakończ zlecenie</>
                                                         ) : null}
+                                                    </Button>
+                                                </TableCell>
+                                            )}
+                                            {role === 'serwis' && service.status === firstStatus ? (
+                                                <TableCell>
+                                                    <Button variant="contained" color="primary"
+                                                            onClick={() => handleRejectStatus(service.id)}>
+                                                            <>Odrzuć zlecenie</>
+                                                    </Button>
+                                                </TableCell>
+                                            ) : null}
+                                            {role === 'client' && service.status !== reclamationStatus ? (
+                                                <TableCell>
+                                                    <Button variant="contained" color="primary"
+                                                            onClick={() => changeServiceClientStatus(service.id)}>
+                                                        Złóż reklamacje
                                                     </Button>
                                                 </TableCell>
                                             ) : null}

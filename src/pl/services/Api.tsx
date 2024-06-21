@@ -81,9 +81,24 @@ export const getAllServicesForPartner = async (partnerName: string): Promise<Ser
     }
 };
 
-export const changeServiceStatus = async (serviceId: number): Promise<void> => {
+export const changeServicePartnerStatus = async (serviceId: number): Promise<void> => {
     try {
         await axios.post<void>(`/api/services/partner/change-status/${serviceId}`);
+    } catch (error) {
+        throw error;
+    }
+};
+export const rejectServicePartnerStatus = async (serviceId: number): Promise<void> => {
+    try {
+        await axios.post<void>(`/api/services/partner/reject/${serviceId}`);
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const changeServiceClientStatus = async (serviceId: number): Promise<void> => {
+    try {
+        await axios.post<void>(`/api/services/client/change-status/${serviceId}`);
     } catch (error) {
         throw error;
     }
